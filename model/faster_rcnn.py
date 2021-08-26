@@ -11,7 +11,7 @@ from torch import nn
 from data.dataset import preprocess
 from torch.nn import functional as F
 from utils.config import opt
-
+from model.utils.fpn import FPN
 
 def nograd(f):
     def new_f(*args,**kwargs):
@@ -76,11 +76,12 @@ class FasterRCNN(nn.Module):
         self.extractor = extractor
         self.rpn = rpn
         self.head = head
-
+        self.fpn = FPN()
         # mean and std
         self.loc_normalize_mean = loc_normalize_mean
         self.loc_normalize_std = loc_normalize_std
         self.use_preset('evaluate')
+        print(self.extractor)
 
     @property
     def n_class(self):
@@ -126,7 +127,8 @@ class FasterRCNN(nn.Module):
         """
         img_size = x.shape[2:]
 
-        h = self.extractor(x)
+        p1, p2, p3 = self.extractor(x)
+        f1, f2, f3 = self.fpn(p1, p2, p3)
         rpn_locs, rpn_scores, rois, roi_indices, anchor = \
             self.rpn(h, img_size, scale)
         roi_cls_locs, roi_scores = self.head(

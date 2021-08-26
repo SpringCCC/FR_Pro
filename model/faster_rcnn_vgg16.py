@@ -10,6 +10,24 @@ from utils import array_tool as at
 from utils.config import opt
 
 
+
+class Extractor(nn.Module):
+
+    def __init__(self, vgg16_extractor: list):
+        super(Extractor, self).__init__()
+        self.basic = nn.Sequential(*vgg16_extractor[:10])
+        self.p1 = nn.Sequential(*vgg16_extractor[10:17])
+        self.p2 = nn.Sequential(*vgg16_extractor[17:24])
+        self.p3 = nn.Sequential(*vgg16_extractor[24:])
+
+
+    def forward(self, x):
+        x = self.basic(x)
+        p1_feature = self.p1(x)
+        p2_feature = self.p2(p1_feature)
+        p3_feature = self.p3(p2_feature)
+        return p1_feature, p2_feature, p3_feature
+
 def decom_vgg16():
     # the 30th layer of features is relu of conv5_3
     if opt.caffe_pretrain:
@@ -33,8 +51,7 @@ def decom_vgg16():
     for layer in features[:10]:
         for p in layer.parameters():
             p.requires_grad = False
-
-    return nn.Sequential(*features), classifier
+    return features, classifier
 
 
 class FasterRCNNVGG16(FasterRCNN):
@@ -60,8 +77,8 @@ class FasterRCNNVGG16(FasterRCNN):
                  ratios=[0.5, 1, 2],
                  anchor_scales=[8, 16, 32]
                  ):
-                 
-        extractor, classifier = decom_vgg16()
+        vgg16_extractor, classifier = decom_vgg16()
+        extractor = Extractor(vgg16_extractor)
 
         rpn = RegionProposalNetwork(
             512, 512,

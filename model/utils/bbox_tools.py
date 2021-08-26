@@ -192,7 +192,7 @@ if __name__ == '__main__':
 
 
 def generate_anchor_base(base_size=16, ratios=[0.5, 1, 2],
-                         anchor_scales=[8, 16, 32]):
+                         anchor_scales=[16]):
     """Generate anchor base windows by enumerating aspect ratio and scales.
 
     Generate anchors that are scaled and modified to the given aspect ratios.
