@@ -2,7 +2,7 @@ from __future__ import  absolute_import
 import torch as t
 from torch import nn
 from torchvision.models import vgg16
-from torchvision.ops import RoIPool
+from torchvision.ops import RoIPool, RoIAlign
 
 from model.region_proposal_network import RegionProposalNetwork
 from model.faster_rcnn import FasterRCNN
@@ -113,7 +113,8 @@ class VGG16RoIHead(nn.Module):
         self.n_class = n_class
         self.roi_size = roi_size
         self.spatial_scale = spatial_scale
-        self.roi = RoIPool( (self.roi_size, self.roi_size),self.spatial_scale)
+        # self.roi = RoIPool( (self.roi_size, self.roi_size),self.spatial_scale)
+        self.roi = RoIAlign( (self.roi_size, self.roi_size),self.spatial_scale, 1, False)
 
     def forward(self, x, rois, roi_indices):
         """Forward the chain.
