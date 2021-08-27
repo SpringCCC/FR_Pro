@@ -76,6 +76,7 @@ class FasterRCNN(nn.Module):
         self.extractor = extractor
         self.rpn = rpn
         self.head = head
+        self.fpn_proposal =
         self.fpn = FPN()
         # mean and std
         self.loc_normalize_mean = loc_normalize_mean

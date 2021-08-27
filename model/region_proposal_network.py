@@ -43,12 +43,12 @@ class RegionProposalNetwork(nn.Module):
 
     def __init__(
             self, in_channels=512, mid_channels=512, ratios=[0.5, 1, 2],
-            anchor_scales=[16], feat_stride=16,
+            anchor_scales=[8, 16, 32], feat_stride=[4, 8, 16],
             proposal_creator_params=dict(),
     ):
         super(RegionProposalNetwork, self).__init__()
-        self.anchor_base = generate_anchor_base(
-            anchor_scales=anchor_scales, ratios=ratios)
+        self.ratios = ratios
+        self.anchor_scales = anchor_scales
         self.feat_stride = feat_stride
         self.proposal_layer = ProposalCreator(self, **proposal_creator_params)
         n_anchor = self.anchor_base.shape[0]
@@ -98,6 +98,8 @@ class RegionProposalNetwork(nn.Module):
                 Its shape is :math:`(H W A, 4)`.
 
         """
+        self.anchor_base = generate_anchor_base(
+            anchor_scales=self.anchor_scales, ratios=self.ratios)
         n, _, hh, ww = x.shape
         anchor = _enumerate_shifted_anchor(
             np.array(self.anchor_base),
